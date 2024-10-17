@@ -12,7 +12,7 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('https://2a80-182-181-254-237.ngrok-free.app/signup', {
+      const response = await axios.post('https://ff7c-182-181-179-165.ngrok-free.app/signup', {
         username,
         email,
         password,

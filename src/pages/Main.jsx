@@ -7,6 +7,7 @@ function Main() {
   const [previewUrl, setPreviewUrl] = useState(null); // State for image preview
   const [predictionResult, setPredictionResult] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Loading state
 
   // Handle file selection and generate a preview URL
   const handleFileChange = (e) => {
@@ -33,22 +34,30 @@ function Main() {
     const formData = new FormData();
     formData.append('image', selectedFile);
 
-    try {
-      // Make the POST request to the backend's predict API
-      const response = await axios.post(
-        'https://2a80-182-181-254-237.ngrok-free.app/predict',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+    setIsLoading(true); // Set loading to true when the prediction starts
+    setPredictionResult(null); // Clear previous result
 
-      // Assuming the response contains 'predicted_class' and 'predicted_probability'
-      setPredictionResult(response.data);
+    try {
+      // Simulate a delay of 3-5 seconds (you can adjust the time as needed)
+      setTimeout(async () => {
+        // Make the POST request to the backend's predict API
+        const response = await axios.post(
+          'https://ff7c-182-181-179-165.ngrok-free.app/predict',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+
+        // Assuming the response contains 'predicted_class' and 'predicted_probability'
+        setPredictionResult(response.data);
+        setIsLoading(false); // Set loading to false once prediction is complete
+      }, 3000); // Simulating 3 seconds delay
     } catch (error) {
       setErrorMessage('Error predicting the image. Please try again.');
+      setIsLoading(false); // Set loading to false in case of error
       console.error('Error:', error);
     }
   };
@@ -109,25 +118,35 @@ function Main() {
           </button>
         </div>
 
-        {/* Prediction Result Section */}
-        {predictionResult && (
-          <div className="bg-white p-8 w-1/2 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">
-              Prediction Results
-            </h2>
+        {/* Loader or Prediction Result Section */}
+        {isLoading ? (
+          <div className="w-1/2 flex justify-center items-center">
+            {/* You can customize the loader here */}
+            <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32"></div>
+            <p className="ml-4 text-xl font-bold text-gray-700">Predicting...</p>
+          </div>
+        ) : (
+          predictionResult && (
+            <div className="bg-white p-8 w-1/2 rounded-lg shadow-lg">
+              <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">
+                Prediction Results
+              </h2>
 
-            <div className="text-left">
-              {/* Display Predicted Class and Probability */}
-              <p className="text-lg font-semibold text-gray-700">
-                Predicted Class:{" "}
-                <span className="font-bold">
-                  {predictionResult.predicted_class}
-                </span>
-              </p>
-              <p className="text-lg text-gray-600">
-                Predicted Probability:{" "}
-                {predictionResult.predicted_probability.toFixed(4)}
-              </p>
+              {/* Prediction Result Container with Border */}
+              <div className="p-4 border-4 border-gray-500 rounded-lg mb-4">
+                <p className="text-lg font-bold text-gray-800">
+                  Predicted Class:{" "}
+                  <span className="font-bold text-blue-500">
+                    {predictionResult.predicted_class}
+                  </span>
+                </p>
+                <p className="text-lg font-bold text-gray-800">
+                  Predicted Probability:{" "}
+                  <span className="bg-yellow-200 text-xl font-bold px-2 py-1 rounded-lg text-gray-800">
+                    {predictionResult.predicted_probability.toFixed(4)}
+                  </span>
+                </p>
+              </div>
 
               {/* Display All Probabilities in Tabular Form */}
               <div className="mt-4">
@@ -151,7 +170,9 @@ function Main() {
                         <tr key={index}>
                           <td className="px-4 py-2 border-b">{className}</td>
                           <td className="px-4 py-2 border-b">
-                            {probability.toFixed(4)}
+                            <span className="bg-blue-200 px-2 py-1 rounded-lg">
+                              {probability.toFixed(4)}
+                            </span>
                           </td>
                         </tr>
                       )
@@ -160,7 +181,7 @@ function Main() {
                 </table>
               </div>
             </div>
-          </div>
+          )
         )}
       </div>
 
